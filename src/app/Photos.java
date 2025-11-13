@@ -12,7 +12,7 @@ public class Photos extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
         stage = primaryStage;
-        go("Login.fxml");   // Start with login
+        go("Login.fxml");  
         stage.setTitle("Photos");
         stage.show();
     }
@@ -27,11 +27,9 @@ public class Photos extends Application {
         }
     }
 
-    public static Stage getStage() {
-        return stage;
-    }
+    public static Stage getStage() { return stage; }
 
-    public static void main(String[] args) {
-        launch(args);
+    public static void main(String[] args) { 
+    	launch(args);
     }
 }
