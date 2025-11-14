@@ -1,7 +1,6 @@
 package view;
 
 import java.util.Optional;
-
 import app.Photos;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -28,8 +27,6 @@ public class Albums {
             return;
         }
         user = UserStorage.getOrCreateUser(username);
-   
-        // albums.setAll("stuff", "other stuff", "sssstuff"); // stub data
         albums.setAll(user.getAlbums());
         albumList.setItems(albums);
         status.setText("Logged in as " + username);
@@ -72,7 +69,6 @@ public class Albums {
         }
     }
  
-
     @FXML
     private void onRename() {
         Album selection = albumList.getSelectionModel().getSelectedItem();
@@ -107,15 +103,15 @@ public class Albums {
         String name = selection.getName();
         user.deleteAlbum(name);
         albums.remove(selection);
-        persist("Deleted: " + name);
-        
+        persist("Deleted: " + name);   
     }
 
     @FXML
     private void onOpen() {
         Album selection = albumList.getSelectionModel().getSelectedItem();
         if (selection == null) return;
-
+        
+        Session.setCurrentAlbumName(selection.getName());
         Photos.go("AlbumView.fxml");  
     }
 
