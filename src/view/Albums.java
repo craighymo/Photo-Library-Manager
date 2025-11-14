@@ -1,34 +1,39 @@
 package view;
 
+import java.util.Optional;
+
 import app.Photos;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
-import model.Session;
-// import model.User;
-// import model.UserStorage;
-// import model.Album;
+import model.*;
+
+// reminder set all FXML to java FX 21
 
 public class Albums {
 
-    @FXML private ListView<String> albumList;  
+    @FXML private ListView<Album> albumList;  
     @FXML private Button renameButton, deleteButton, openButton;
     @FXML private Label status;
 
-    // private String username;
-    private final ObservableList<String> albums = FXCollections.observableArrayList();
+    private User user;
+    private final ObservableList<Album> albums = FXCollections.observableArrayList();
 
     @FXML
     private void initialize() {
-
-        // storage is gonna go here
-        
-        albums.setAll("stuff", "other stuff", "sssstuff"); // stub data
-
+    	String username = Session.getUsername();
+    	if (username == null) {
+            status.setText("Not logged in");
+            return;
+        }
+        user = UserStorage.getOrCreateUser(username);
+   
+        // albums.setAll("stuff", "other stuff", "sssstuff"); // stub data
+        albums.setAll(user.getAlbums());
         albumList.setItems(albums);
-
-        // Enable/disable buttons when selectionection changes
+        status.setText("Logged in as " + username);
+        
         albumList.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
             boolean selected = newVal != null;
             renameButton.setDisable(!selected);
@@ -43,64 +48,75 @@ public class Albums {
         dialog.setHeaderText("Create new album");
         dialog.setContentText("Album name:");
         dialog.setTitle("New Album");
-        dialog.showAndWait().ifPresent(name -> {
-            if (name.isBlank()) {
-                alert("Name cannot be empty.");
-                return;
-            }
-            if (albums.contains(name)) {
-                alert("An album with that name already exists.");
-                return;
-            }
-            albums.add(name);
-            status.setText("Created: " + name);
-            // need to persist in UserStorage for rename
-        });
+        Optional<String> result = dialog.showAndWait();
+        if (result.isEmpty()) {
+            return;
+        }
+
+        String name = result.get().trim();
+        if (name.isEmpty()) {
+            alert("Name cannot be empty.");
+            return;
+        }
+        if (user.getAlbum(name) != null) {  
+            alert("An album with that name already exists.");
+            return;
+        }
+        user.addAlbum(name);
+        albums.setAll(user.getAlbums());
+        persist("Created: " + name);
+        
+        Album created = user.getAlbum(name);
+        if (created != null) {
+        	albumList.getSelectionModel().select(created);
+        }
     }
+ 
 
     @FXML
     private void onRename() {
-        String selection = albumList.getSelectionModel().getSelectedItem();
+        Album selection = albumList.getSelectionModel().getSelectedItem();
         if (selection == null) return;
-        TextInputDialog dialog = new TextInputDialog(selection);
+        String oldName = selection.getName();
+        TextInputDialog dialog = new TextInputDialog(oldName);
         dialog.setHeaderText("Rename album");
         dialog.setContentText("New name:");
         dialog.setTitle("Rename Album");
-        dialog.showAndWait().ifPresent(name -> {
-            if (name.isBlank()) { 
-            	alert("Name is empty."); 
-            	return; 
-            }
-            if (!selection.equals(name) && albums.contains(name)) {
-                alert("An album with that name already exists."); 
-                return;
-            }
-            int index = albums.indexOf(selection);
-            albums.set(index, name);
-            status.setText("Renamed to: " + name);
-        });
+        Optional<String> result = dialog.showAndWait();
+        if (result.isEmpty()) return;
+
+        String newName = result.get().trim();
+        if (newName.isEmpty()) {
+            alert("Name is empty.");
+            return;
+        }
+        if (!oldName.equals(newName) && user.getAlbum(newName) != null) {
+            alert("An album with that name already exists.");
+            return;
+        }
+        selection.setName(newName);
+        albumList.refresh();
+        persist("Renamed to: " + newName);
     }
 
     @FXML
     private void onDelete() {
-        String selection = albumList.getSelectionModel().getSelectedItem();
+    	Album selection = albumList.getSelectionModel().getSelectedItem();
         if (selection == null) return;
-        if (confirm("Delete album '" + selection + "'?")) {
-            albums.remove(selection);
-            status.setText("Deleted: " + selection);
-        }
+        if (!confirm("Delete album '" + selection + "'?")) { return; }
+        String name = selection.getName();
+        user.deleteAlbum(name);
+        albums.remove(selection);
+        persist("Deleted: " + name);
+        
     }
 
     @FXML
     private void onOpen() {
-        String selection = albumList.getSelectionModel().getSelectedItem();
+        Album selection = albumList.getSelectionModel().getSelectedItem();
         if (selection == null) return;
 
-        // gonna pass an album object here
-  
-        // TEST: Current.setAlbumName(selection);
-
-        Photos.go("AlbumView.fxml");  // create a basic placeholder fxml next
+        Photos.go("AlbumView.fxml");  
     }
 
     @FXML
@@ -116,5 +132,15 @@ public class Albums {
     private boolean confirm(String msg) {
         return new Alert(Alert.AlertType.CONFIRMATION, msg, ButtonType.OK, ButtonType.CANCEL)
                 .showAndWait().orElse(ButtonType.CANCEL) == ButtonType.OK;
+    }
+    
+    private void persist(String statusMsg) {
+        try {
+            UserStorage.putUser(user);   
+            status.setText(statusMsg);
+        } catch (Exception e) {
+            e.printStackTrace();
+            alert("Save failed. See console for details.");
+        }
     }
 }
