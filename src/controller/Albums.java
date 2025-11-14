@@ -1,4 +1,4 @@
-package view;
+package controller;
 
 import java.util.Optional;
 import app.Photos;
@@ -136,7 +136,7 @@ public class Albums {
             status.setText(statusMsg);
         } catch (Exception e) {
             e.printStackTrace();
-            alert("Save failed. See console for details.");
+            alert("Save failed.");
         }
     }
 }

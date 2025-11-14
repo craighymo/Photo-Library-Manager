@@ -37,6 +37,7 @@ public class Album implements Serializable {
 
     @Override
     public String toString() {
-        return name + " (" + photos.size() + " photos)";
+    	return name;
+        //return name + " (" + photos.size() + " photos)";
     }
 }

@@ -1,4 +1,5 @@
 package model;
+
 import java.io.*;
 import java.nio.file.*;
 import java.time.*;
@@ -26,14 +27,16 @@ public class Photo implements Serializable {
     
     public String getCaption() { return caption; }
     
+    public void setCaption(String caption) { this.caption = caption; }
+    
     public LocalDateTime getDate() { return date; }
     
     public List<Tag> getTags() { return tags; }
 
-    public void setCaption(String caption) { this.caption = caption; }
-
     public void addTag(Tag tag) {
-        if (!tags.contains(tag)) tags.add(tag);
+        if (!tags.contains(tag)) {
+        	tags.add(tag);
+        }
     }
 
     public void removeTag(Tag tag) {
