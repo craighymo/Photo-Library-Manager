@@ -1,26 +1,35 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
 
 <BorderPane xmlns="http://javafx.com/javafx/21"
             xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="view.Albums">
+            fx:controller="controller.AlbumView">
     <top>
         <ToolBar>
-            <Button fx:id="newBtn"    text="New"    onAction="#onNew"/>
-            <Button fx:id="renameBtn" text="Rename" onAction="#onRename" disable="true"/>
-            <Button fx:id="deleteBtn" text="Delete" onAction="#onDelete" disable="true"/>
-            <Button fx:id="openBtn"   text="Open"   onAction="#onOpen"   disable="true"/>
+            <Button text="Back" onAction="#onBack"/>
+
             <Separator orientation="VERTICAL"/>
-            <Button text="Logout" onAction="#onLogout"/>
+
+            <Button text="Add Photo"        onAction="#onAddPhoto"/>
+            <Button text="Remove Photo"     fx:id="removeButton" onAction="#onRemovePhoto" disable="true"/>
+            <Button text="Edit Caption"     fx:id="editCaptionButton" onAction="#onEditCaption" disable="true"/>
+
+            <Pane HBox.hgrow="ALWAYS"/>
+
+            <Label text="Album: "/>
+            <Label fx:id="albumNameLabel"/>
+            <Label text="   Photos: "/>
+            <Label fx:id="photoCountLabel"/>
         </ToolBar>
     </top>
 
     <center>
-        <ListView fx:id="albumList"/>
+        <ListView fx:id="photoList"/>
     </center>
 
     <bottom>
-        <Label fx:id="status" style="-fx-padding: 6;"/>
+        <Label fx:id="status" style="-fx-padding: 8;"/>
     </bottom>
+
 </BorderPane>

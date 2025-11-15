@@ -1,8 +1,10 @@
 package controller;
 
 import app.Photos;
+import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.stage.FileChooser;
 import model.*;
 
 import java.io.File;
@@ -28,8 +30,32 @@ public class AlbumView {
 
         if (username == null || albumName == null) {
             status.setText("No album selectected.");
+            disableAll();
             return;
         }
+
+        user = UserStorage.getOrCreateUser(username);
+        album = user.getAlbum(albumName);
+
+        if (album == null) {
+            status.setText("Album '" + albumName + "' not found.");
+            disableAll();
+            return;
+        }
+
+        albumNameLabel.setText(album.getName());
+        updatePhotoCount();
+
+        photoList.setItems(FXCollections.observableArrayList(album.getPhotos()));
+        // Photo.toString() is gonna determine whats shown
+
+        photoList.getSelectionModel().selectedItemProperty().addListener((obs, oldV, newV) -> {
+            boolean selected = newV != null;
+            removeButton.setDisable(!selected);
+            editCaptionButton.setDisable(!selected);
+        });
+
+        status.setText("Viewing album: " + album.getName());
     }
 
     @FXML
@@ -37,22 +63,95 @@ public class AlbumView {
         Photos.go("Albums.fxml");
     }
 
-    private void persist(String statusMsg) {
+    @FXML
+    private void onAddPhoto() {
+        FileChooser fc = new FileChooser();
+        fc.setTitle("Select Photo");
+        fc.getExtensionFilters().add(
+                new FileChooser.ExtensionFilter("Images", "*.jpg", "*.jpeg", "*.png", "*.gif", "*.bmp")
+        ); 
+
+        File selected = fc.showOpenDialog(null);
+        if (selected == null) return;
+
+        try {
+            Photo p = new Photo(selected.getAbsolutePath());
+
+            boolean exists = album.getPhotos().stream()
+                    .anyMatch(photo -> photo.getFilePath().equals(p.getFilePath()));
+            if (exists) {
+                alert("This photo is already in the album.");
+                return;
+            }
+
+            album.addPhoto(p);
+            photoList.getItems().add(p);
+            updatePhotoCount();
+            persist("Added photo: " + p.toString());
+        } catch (Exception e) {
+            e.printStackTrace();
+            alert("Failed to load photo.");
+        }
+    }
+
+    @FXML
+    private void onRemovePhoto() {
+        Photo select = photoList.getSelectionModel().getSelectedItem();
+        if (select == null) return;
+
+        if (!confirm("Remove photo from the album?")) return;
+
+        album.removePhoto(select);
+        photoList.getItems().remove(select);
+        updatePhotoCount();
+        persist("Removed photo.");
+    }
+
+    @FXML
+    private void onEditCaption() {
+        Photo select = photoList.getSelectionModel().getSelectedItem();
+        if (select == null) return;
+
+        TextInputDialog dialog = new TextInputDialog(select.getCaption());
+        dialog.setHeaderText("Edit Caption");
+        dialog.setContentText("Caption:");
+        dialog.setTitle("Photo Caption");
+
+        dialog.showAndWait().ifPresent(caption -> {
+            select.setCaption(caption);
+            photoList.refresh();
+            persist("Updated caption.");
+        });
+    }
+
+    private void disableAll() {
+        if (removeButton != null) removeButton.setDisable(true);
+        if (editCaptionButton != null) editCaptionButton.setDisable(true);
+        if (photoList != null) photoList.setDisable(true);
+    }
+
+    private void updatePhotoCount() {
+        if (photoCountLabel != null && album != null) {
+            photoCountLabel.setText(Integer.toString(album.getPhotoCount()));
+        }
+    }
+
+    private void persist(String message) {
         try {
             UserStorage.putUser(user);
-            status.setText(statusMsg);
+            status.setText(message);
         } catch (Exception e) {
             e.printStackTrace();
             alert("Save failed.");
         }
     }
 
-    private void alert(String msg) {
-        new Alert(Alert.AlertType.INFORMATION, msg, ButtonType.OK).showAndWait();
+    private void alert(String message) {
+        new Alert(Alert.AlertType.INFORMATION, message, ButtonType.OK).showAndWait();
     }
 
-    private boolean confirm(String msg) {
-        return new Alert(Alert.AlertType.CONFIRMATION, msg, ButtonType.OK, ButtonType.CANCEL)
+    private boolean confirm(String message) {
+        return new Alert(Alert.AlertType.CONFIRMATION, message, ButtonType.OK, ButtonType.CANCEL)
                 .showAndWait().orElse(ButtonType.CANCEL) == ButtonType.OK;
     }
 }
