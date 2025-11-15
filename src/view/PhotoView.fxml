@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx/21"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="controller.PhotoView">
+
+    <top>
+        <VBox spacing="4" style="-fx-padding: 8;">
+            <Label text="Caption:"/>
+            <Label fx:id="captionLabel" style="-fx-font-weight: bold;"/>
+
+            <Label text="Date/Time:"/>
+            <Label fx:id="dateTimeLabel"/>
+        </VBox>
+    </top>
+
+    <center>
+        <StackPane>
+            <ImageView fx:id="imageView"
+                       preserveRatio="true"
+                       smooth="true"
+                       pickOnBounds="true"/>
+        </StackPane>
+    </center>
+
+    <right>
+        <VBox spacing="4" style="-fx-padding: 8;">
+            <Label text="Tags:"/>
+            <ListView fx:id="tagList" prefWidth="160.0" prefHeight="200.0"/>
+        </VBox>
+    </right>
+
+    <bottom>
+        <HBox spacing="8" style="-fx-padding: 8;">
+            <Label fx:id="status" HBox.hgrow="ALWAYS"/>
+            <Pane HBox.hgrow="ALWAYS"/>
+            <Button text="Close" onAction="#onClose"/>
+        </HBox>
+    </bottom>
+
+</BorderPane>

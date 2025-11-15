@@ -2,6 +2,8 @@ package model;
 
 import java.io.*;
 import java.util.*;
+import java.time.LocalDateTime;
+import java.util.Comparator;
 
 public class Album implements Serializable {
     private static final long serialVersionUID = 1L; // keeps saved files compatible
@@ -33,6 +35,24 @@ public class Album implements Serializable {
 
     public int getPhotoCount() {
         return photos.size();
+    }
+    
+    public LocalDateTime getEarliestDate() {
+        if (photos.isEmpty()) return null;
+        return photos.stream()
+                .map(Photo::getDate)
+                .filter(Objects::nonNull)
+                .min(Comparator.naturalOrder())
+                .orElse(null);
+    }
+
+    public LocalDateTime getLatestDate() {
+        if (photos.isEmpty()) return null;
+        return photos.stream()
+                .map(Photo::getDate)
+                .filter(Objects::nonNull)
+                .max(Comparator.naturalOrder())
+                .orElse(null);
     }
 
     @Override

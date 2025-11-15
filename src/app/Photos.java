@@ -26,6 +26,20 @@ public class Photos extends Application {
             e.printStackTrace();
         }
     }
+    
+    // opens up a new window 
+    public static void popup(String fxml) {
+        try {
+            FXMLLoader loader = new FXMLLoader(Photos.class.getResource("/view/" + fxml));
+            Stage popup = new Stage();
+            popup.setScene(new Scene(loader.load()));
+            popup.setTitle("Photo Viewer");
+            popup.initOwner(stage);
+            popup.show();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
     public static Stage getStage() { return stage; }
 

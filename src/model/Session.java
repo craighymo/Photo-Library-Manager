@@ -4,6 +4,7 @@ public class Session {
     private static String username;
     private static boolean admin;
     public static String currentAlbum;
+    public static Photo currentPhoto;
 
     public static void setCurrentUser(String user) {
         username = user;
@@ -22,8 +23,18 @@ public class Session {
         return currentAlbum;
     }
     
+    public static void setCurrentPhoto(Photo p) {
+        currentPhoto = p;
+    }
+
+    public static Photo getCurrentPhoto() {
+        return currentPhoto;
+    }
+    
     public static void clear() { 
     	username = null; 
     	admin = false; 
+    	currentAlbum = null;
+        currentPhoto = null;
     }
 }

@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.control.SplitPane?>
 
 <BorderPane xmlns="http://javafx.com/javafx/21"
             xmlns:fx="http://javafx.com/fxml/1"
@@ -10,6 +12,7 @@
             <Button text="Back" onAction="#onBack"/>
 
             <Separator orientation="VERTICAL"/>
+	    <Button text="Open Photo" fx:id="openPhotoButton" onAction="#onOpenPhoto" disable="true"/>
 
             <Button text="Add Photo"        onAction="#onAddPhoto"/>
             <Button text="Remove Photo"     fx:id="removeButton" onAction="#onRemovePhoto" disable="true"/>
