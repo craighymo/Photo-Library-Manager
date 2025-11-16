@@ -2,6 +2,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.control.ScrollPane?>
 
 <BorderPane xmlns="http://javafx.com/javafx/21"
             xmlns:fx="http://javafx.com/fxml/1"
@@ -18,18 +19,29 @@
     </top>
 
     <center>
-        <StackPane>
-            <ImageView fx:id="imageView"
-                       preserveRatio="true"
-                       smooth="true"
-                       pickOnBounds="true"/>
-        </StackPane>
+        <ScrollPane fitToWidth="true" fitToHeight="true">
+            <content>
+                <StackPane alignment="CENTER" style="-fx-padding: 10;">
+                    <ImageView fx:id="imageView"
+                               fitWidth="600"
+                               fitHeight="400"
+                               preserveRatio="true"
+                               smooth="true"
+                               pickOnBounds="true"/>
+                </StackPane>
+            </content>
+        </ScrollPane>
     </center>
 
     <right>
         <VBox spacing="4" style="-fx-padding: 8;">
             <Label text="Tags:"/>
             <ListView fx:id="tagList" prefWidth="160.0" prefHeight="200.0"/>
+
+            <HBox spacing="4">
+                <Button text="Add Tag"/>
+                <Button text="Delete Tag"/>
+            </HBox>
         </VBox>
     </right>
 
