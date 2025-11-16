@@ -14,7 +14,8 @@
             <Button fx:id="newButton" onAction="#onNew" text="New" />
             <Button fx:id="renameButton" disable="true" onAction="#onRename" text="Rename" />
             <Button fx:id="deleteButton" disable="true" onAction="#onDelete" text="Delete" />
-	    <Button fx:id="searchButton" disable="true" onAction="#onOpen" text="Search" />
+			<Button fx:id="searchButton" disable="true" onAction="#onSearch" text="Search" />
+
             <Separator orientation="VERTICAL" />
             <Button onAction="#onLogout" text="Logout" />
         </ToolBar>
