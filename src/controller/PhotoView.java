@@ -28,7 +28,6 @@ public class PhotoView {
             return;
         }
 
-        // uses filename if theres no caption
         String caption = photo.getCaption();
         if (caption == null || caption.isEmpty()) {
             File file = new File(photo.getFilePath());
@@ -54,6 +53,8 @@ public class PhotoView {
             imageView.setImage(null);
             status.setText("File not found: " + photo.getFilePath());
         }
+        
+        tagList.getItems().setAll(photo.getTags());
     }
 
     @FXML

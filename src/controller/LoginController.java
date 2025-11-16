@@ -1,58 +1,25 @@
 package controller;
 
-import app.Photos;
 import javafx.fxml.FXML;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
-import javafx.stage.Stage;
+import app.Photos;
 import model.Session;
-import model.User;
-import model.UserStorage;
 
 public class LoginController {
 
-    @FXML
-    private TextField usernameField;
+    @FXML private TextField usernameField;
 
     @FXML
-    private Button loginButton;
-
-    private Stage stage;
-
-    public void setStage(Stage s) {
-        this.stage = s;
-    }
-
-    @FXML
-    public void onLogin() {
+    private void onLogin() {
         String username = usernameField.getText().trim();
+        if (username.isEmpty()) return;
 
-        if (username.isEmpty()) {
-            showError("Username cannot be empty.");
-            return;
-        }
+        Session.setCurrentUser(username);
 
-        if (username.equalsIgnoreCase("admin")) {
-            Session.setUser(null);
+        if (Session.isAdmin()) {
             Photos.go("Admin.fxml");
-            return;
+        } else {
+            Photos.go("Albums.fxml");
         }
-
-        User user = UserStorage.getUser(username);
-        if (user == null) {
-            showError("User not found.");
-            return;
-        }
-
-        Session.setUser(username);
-        Photos.go("Albums.fxml");
-    }
-
-    private void showError(String msg) {
-        Alert a = new Alert(Alert.AlertType.ERROR);
-        a.setHeaderText(null);
-        a.setContentText(msg);
-        a.showAndWait();
     }
 }
