@@ -6,14 +6,37 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="286.0" prefWidth="289.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.LoginController">
-   <children>
-      <Label alignment="CENTER" layoutX="87.0" layoutY="76.0" prefHeight="32.0" prefWidth="115.0" text="photos" textAlignment="CENTER">
-         <font>
-            <Font name="Verdana" size="11.686956405639648" />
-         </font>
-      </Label>
-      <TextField fx:id="usernameField" layoutX="34.0" layoutY="163.0" promptText="username" />
-      <Button fx:id="button" layoutX="202.0" layoutY="161.0" mnemonicParsing="false" onAction="#onLogin" text="login" />
-   </children>
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" 
+            minHeight="-Infinity" minWidth="-Infinity"
+            prefHeight="300.0" prefWidth="300.0"
+            xmlns="http://javafx.com/javafx/21"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="controller.LoginController">
+
+    <children>
+
+        <Label alignment="CENTER"
+               layoutX="90.0" layoutY="70.0"
+               prefHeight="32.0" prefWidth="120.0"
+               text="Photos"
+               textAlignment="CENTER">
+            <font>
+                <Font name="Verdana" size="18" />
+            </font>
+        </Label>
+
+        <TextField fx:id="usernameField"
+                   layoutX="40.0" layoutY="150.0"
+                   prefWidth="220.0"
+                   promptText="username" />
+
+        <Button fx:id="loginButton"
+                layoutX="105.0" layoutY="200.0"
+                prefWidth="90.0"
+                text="Login"
+                onAction="#onLogin"
+                mnemonicParsing="false" />
+
+    </children>
+
 </AnchorPane>
