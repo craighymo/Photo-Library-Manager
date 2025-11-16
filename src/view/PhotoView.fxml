@@ -33,17 +33,20 @@
         </ScrollPane>
     </center>
 
-    <right>
-        <VBox spacing="4" style="-fx-padding: 8;">
-            <Label text="Tags:"/>
-            <ListView fx:id="tagList" prefWidth="160.0" prefHeight="200.0"/>
+<right>
+    <VBox spacing="4" style="-fx-padding: 8;">
+        <Label text="Tags:"/>
+        <ListView fx:id="tagList" prefWidth="160.0" prefHeight="200.0"/>
 
-            <HBox spacing="4">
-                <Button text="Add Tag"/>
-                <Button text="Delete Tag"/>
-            </HBox>
-        </VBox>
-    </right>
+        <HBox spacing="4">
+            <Button text="Add Tag" onAction="#onAddTag"/>
+            <Button text="Delete Tag"
+                    fx:id="deleteTagButton"
+                    onAction="#onDeleteTag"
+                    disable="true"/>
+        </HBox>
+    </VBox>
+</right>
 
     <bottom>
         <HBox spacing="8" style="-fx-padding: 8;">
