@@ -11,7 +11,7 @@ public class LoginController {
 
     @FXML
     private void onLogin() {
-        String username = usernameField.getText().trim();
+        String username = usernameField.getText().toLowerCase().trim();
         if (username.isEmpty()) return;
 
         Session.setCurrentUser(username);

@@ -57,8 +57,7 @@ public class AlbumView {
         updatePhotoCount();
 
         photoList.setItems(FXCollections.observableArrayList(album.getPhotos()));
-        // Photo.toString() is gonna determine whats shown
-        
+
         photoList.setCellFactory(list -> new ListCell<Photo>() {
 
             private final ImageView thumbNail = new ImageView();
