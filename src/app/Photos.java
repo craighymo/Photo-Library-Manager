@@ -14,7 +14,17 @@ public class Photos extends Application {
         stage = primaryStage;
         go("Login.fxml");  
         stage.setTitle("Photos");
+
+        stage.setOnCloseRequest(e -> {
+    try {
+        model.UserStorage.save();
+    } catch (Exception ex) {
+        ex.printStackTrace();
+    }
+
+    });
         stage.show();
+
     }
 
     public static void go(String fxml) {
