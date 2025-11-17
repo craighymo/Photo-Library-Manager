@@ -1,14 +1,19 @@
 package controller;
 
 import javafx.fxml.FXML;
+import javafx.geometry.Insets;
+import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
 import model.*;
 import java.io.File;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class PhotoView {
 
@@ -129,42 +134,31 @@ public class PhotoView {
             return;
         }
 
-        TextInputDialog dialog = new TextInputDialog();
-        dialog.setTitle("Add Tag");
-        dialog.setHeaderText("Add a tag in the form name=value");
-        dialog.setContentText("Tag:");
+        Tag newTag = showAddTagDialog();
+        if(newTag == null) {
+        	return;
+        }
+        
+        if (newTag.getName().equals("location")) {
+        	Tag location = getLocationTag();
+        	if (location != null) {
+        		if(!confirm("Repkaces location: " + location.getValue() + " with: " + newTag.getValue())) {
+        			return;
+        		}
+        		photo.removeTag(location);
+        		tagList.getItems().remove(location);	
+        	}
+        }
 
-        dialog.showAndWait().ifPresent(input -> {
-            String trimmed = input.trim();
-            if (trimmed.isEmpty()) {
-                alert("Tag cannot be empty.");
-                return;
-            }
+        if (photo.getTags().contains(newTag)) {
+        	alert("This tag already exists for this photo.");
+            return;
+        }
 
-            int eqIndex = trimmed.indexOf('=');
-            if (eqIndex <= 0 || eqIndex == trimmed.length() - 1) {
-                alert("Tag must be in the form name=value.");
-                return;
-            }
-
-            String name = trimmed.substring(0, eqIndex).trim();
-            String value = trimmed.substring(eqIndex + 1).trim();
-            if (name.isEmpty() || value.isEmpty()) {
-                alert("Tag name and value cannot be empty.");
-                return;
-            }
-
-            Tag newTag = new Tag(name, value);
-
-            if (photo.getTags().contains(newTag)) {
-                alert("This tag already exists for this photo.");
-                return;
-            }
-
-            photo.addTag(newTag);
-            tagList.getItems().add(newTag);
-            persist("Added tag: " + newTag.toString());
-        });
+        photo.addTag(newTag);
+        tagList.getItems().add(newTag);
+        persist("Added tag: " + newTag);
+        
     }
     
     @FXML
@@ -178,13 +172,120 @@ public class PhotoView {
             return;
         }
 
-        if (!confirm("Delete tag '" + selected.toString() + "'?")) {
+        if (!confirm("Delete tag '" + selected + "'?")) {
             return;
         }
 
         photo.removeTag(selected);
         tagList.getItems().remove(selected);
-        persist("Deleted tag: " + selected.toString());
+        persist("Deleted tag: " + selected);
+    }
+    
+    private Tag showAddTagDialog() {
+        Dialog<Tag> dialog = new Dialog<>();
+        dialog.setTitle("Add Tag");
+        dialog.setHeaderText("Choose a tag type and enter a value");
+
+        ButtonType addButtonType =
+                new ButtonType("Add", ButtonBar.ButtonData.OK_DONE);
+        dialog.getDialogPane().getButtonTypes().addAll(addButtonType, ButtonType.CANCEL);
+
+        ComboBox<String> typeBox = new ComboBox<>();
+        typeBox.getItems().addAll(getKnownTags());
+        typeBox.setEditable(true);
+
+        TextField valueField = new TextField();
+
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+        grid.setPadding(new Insets(10, 10, 10, 10));
+
+        grid.add(new Label("Type:"), 0, 0);
+        grid.add(typeBox, 1, 0);
+        grid.add(new Label("Value:"), 0, 1);
+        grid.add(valueField, 1, 1);
+
+        dialog.getDialogPane().setContent(grid);
+
+        Node addButton = dialog.getDialogPane().lookupButton(addButtonType);
+        addButton.setDisable(true);
+
+        typeBox.getEditor().textProperty().addListener((obs, oldVal, newVal) -> {
+            boolean typeEmpty = newVal == null || newVal.trim().isEmpty();
+            boolean valueEmpty = valueField.getText() == null || valueField.getText().trim().isEmpty();
+            addButton.setDisable(typeEmpty || valueEmpty);
+        });
+
+        valueField.textProperty().addListener((obs, oldVal, newVal) -> {
+            String typeText = typeBox.getEditor().getText();
+            boolean typeEmpty = typeText == null || typeText.trim().isEmpty();
+            boolean valueEmpty = newVal == null || newVal.trim().isEmpty();
+            addButton.setDisable(typeEmpty || valueEmpty);
+        });
+
+        dialog.setResultConverter(button -> {
+            if (button == addButtonType) {
+                String typeText = typeBox.getEditor().getText();
+                String valueText = valueField.getText();
+                if (typeText != null) {
+                    typeText = typeText.trim();
+                }
+                if (valueText != null) {
+                    valueText = valueText.trim();
+                }
+
+                if (typeText == null || typeText.isEmpty()) {
+                    return null;
+                }
+                if (valueText == null || valueText.isEmpty()) {
+                    return null;
+                }
+
+                return new Tag(typeText, valueText);
+            }
+            return null;
+        });
+
+        Optional<Tag> result = dialog.showAndWait();
+        if (result.isPresent()) {
+            return result.get();
+        }
+        return null;
+    }
+    
+    private List<String> getKnownTags() {
+        List<String> list = new ArrayList<>();
+        
+        list.add("person");
+        list.add("location");
+        
+        if (user != null) {
+            for (Album album : user.getAlbums()) {
+                for (Photo photo : album.getPhotos()) {
+                    for (Tag tag : photo.getTags()) {
+                        String name = tag.getName();
+                        if (name != null && !name.isBlank()) {
+                        	if (!list.contains(name))
+                        		list.add(name);
+                        }
+                    }
+                }
+            }
+        }
+        return new ArrayList<>(list);
+    }
+    
+    private Tag getLocationTag() {
+    	if (photo == null) {
+    		return null;
+    	}
+    	for (Tag tag : photo.getTags()) {
+    		if (tag.getName().equals("location")) {
+    			return tag;
+    		}
+    	}
+    	return null;
     }
     
     @FXML
