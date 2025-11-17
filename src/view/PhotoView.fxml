@@ -48,12 +48,20 @@
     </VBox>
 </right>
 
-    <bottom>
-        <HBox spacing="8" style="-fx-padding: 8;">
-            <Label fx:id="status" HBox.hgrow="ALWAYS"/>
-            <Pane HBox.hgrow="ALWAYS"/>
-            <Button text="Close" onAction="#onClose"/>
-        </HBox>
-    </bottom>
+   <bottom>
+    <HBox spacing="8" style="-fx-padding: 8;">
+
+        <Button text="Previous" fx:id="prevButton" onAction="#onPrevious"/>
+        <Button text="Next" fx:id="nextButton" onAction="#onNext"/>
+
+        <Pane HBox.hgrow="ALWAYS"/>
+
+        <!-- Status + Close -->
+        <Label fx:id="status"/>
+        <Pane HBox.hgrow="ALWAYS"/>
+        <Button text="Close" onAction="#onClose"/>
+
+    </HBox>
+</bottom>
 
 </BorderPane>

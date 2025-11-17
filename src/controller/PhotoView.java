@@ -8,6 +8,7 @@ import javafx.stage.Stage;
 import model.*;
 import java.io.File;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 public class PhotoView {
 
@@ -18,20 +19,51 @@ public class PhotoView {
     @FXML private ListView<Tag> tagList; 
     @FXML private Button addTagButton;
     @FXML private Button deleteTagButton;
+    @FXML private Button prevButton;
+    @FXML private Button nextButton;
     
     private Photo photo;
     private User user;
+    private Album album;
+    private int photoIndex;
 
     @FXML
     private void initialize() {
     	String username = Session.getUsername();
+    	String albumName = Session.getCurrentAlbumName();
     	photo = Session.getCurrentPhoto();
-        if (username == null || photo == null) {
-            status.setText("No photo selected.");
-            return;
+        user = UserStorage.getOrCreateUser(username);
+        album = user.getAlbum(albumName);
+        
+        List<Photo> photos = album.getPhotos();
+        
+        int index = photos.indexOf(photo);
+        if (index >= 0) {
+            photoIndex = index;
+        } else {
+            photoIndex = 0;
+            photo = photos.get(0);
+            Session.setCurrentPhoto(photo);
         }
         
-        user = UserStorage.getOrCreateUser(username);
+        showPhoto();
+        updateNavButtons();
+        
+        tagList.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
+            boolean hasSelection = newVal != null;
+            deleteTagButton.setDisable(!hasSelection);
+        });
+    }
+    
+    private void showPhoto() {
+        if (photo == null) {
+            status.setText("No photo selected.");
+            imageView.setImage(null);
+            captionLabel.setText("");
+            dateTimeLabel.setText("");
+            tagList.getItems().clear();
+            return;
+        }
 
         String caption = photo.getCaption();
         if (caption == null || caption.isEmpty()) {
@@ -39,7 +71,6 @@ public class PhotoView {
             caption = file.getName();
         }
         captionLabel.setText(caption);
-
 
         if (photo.getDate() != null) {
             DateTimeFormatter format = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
@@ -53,18 +84,43 @@ public class PhotoView {
         if (file.exists()) {
             Image image = new Image(file.toURI().toString(), true);
             imageView.setImage(image);
-            status.setText("Viewing photo");
+            status.setText("Viewing photo " + (photoIndex + 1));
         } else {
             imageView.setImage(null);
             status.setText("File not found: " + photo.getFilePath());
         }
-        
+
         tagList.getItems().setAll(photo.getTags());
-        
-        tagList.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
-            boolean hasSelection = newVal != null;
-            deleteTagButton.setDisable(!hasSelection);
-        });
+    }
+
+    @FXML
+    private void onPrevious() {
+        List<Photo> photos = album.getPhotos();
+        if (photoIndex > 0) {
+            photoIndex = photoIndex - 1;
+            photo = photos.get(photoIndex);
+            Session.setCurrentPhoto(photo);
+            showPhoto();
+            updateNavButtons();
+        }
+    }
+
+    @FXML
+    private void onNext() {
+        List<Photo> photos = album.getPhotos();
+        if (photoIndex < photos.size() - 1) {
+            photoIndex = photoIndex + 1;
+            photo = photos.get(photoIndex);
+            Session.setCurrentPhoto(photo);
+            showPhoto();
+            updateNavButtons();
+        }
+    }
+    
+    private void updateNavButtons() {
+        List<Photo> photos = album.getPhotos();
+        prevButton.setDisable(photoIndex <= 0);
+        nextButton.setDisable(photoIndex >= photos.size() - 1);
     }
     
     @FXML
@@ -131,8 +187,6 @@ public class PhotoView {
         persist("Deleted tag: " + selected.toString());
     }
     
-    
-
     @FXML
     private void onClose() {
         Stage stage = (Stage) imageView.getScene().getWindow();
