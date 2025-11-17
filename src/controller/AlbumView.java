@@ -108,7 +108,7 @@ public class AlbumView {
                 setGraphic(box);
             }
         });
-
+        
         photoList.getSelectionModel().selectedItemProperty().addListener((obs, oldV, newV) -> {
             boolean selected = newV != null;
             removeButton.setDisable(!selected);
@@ -116,6 +116,12 @@ public class AlbumView {
             openPhotoButton.setDisable(!selected);
             copyButton.setDisable(!selected);
             moveButton.setDisable(!selected);
+        });
+        
+        photoList.setOnMouseClicked(event -> {
+            if (event.getClickCount() == 2) {
+                onOpenPhoto();
+            }
         });
 
         status.setText("Viewing album: " + album.getName());

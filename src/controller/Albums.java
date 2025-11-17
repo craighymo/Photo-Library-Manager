@@ -93,6 +93,12 @@ public class Albums {
             deleteButton.setDisable(!selected);
             openButton.setDisable(!selected);
         });
+        
+        albumList.setOnMouseClicked(event -> {
+            if (event.getClickCount() == 2) {
+                onOpen();
+            }
+        });
     }
 
     @FXML
