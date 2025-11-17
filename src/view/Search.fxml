@@ -4,86 +4,120 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<BorderPane xmlns:fx="http://javafx.com/fxml"
-            fx:controller="controller.SearchController">
+<BorderPane xmlns="http://javafx.com/javafx/21"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="controller.Search"
+            prefWidth="600" prefHeight="500">
 
-    <!-- TOP BAR -->
     <top>
-        <HBox spacing="15">
-            <padding><Insets top="10" right="10" bottom="10" left="10"/></padding>
+        <VBox spacing="10">
+            <padding>
+                <Insets top="10" right="10" bottom="10" left="10"/>
+            </padding>
 
-            <Button text="Back" onAction="#goBack"/>
-            <Button text="Logout" onAction="#logout"/>
+            <fx:define>
+                <ToggleGroup fx:id="logicGroup"/>
+            </fx:define>
 
-            <Label text="Photo Search"
-                   style="-fx-font-size: 20px; -fx-font-weight: bold;"/>
-        </HBox>
+            <children>
+
+                <HBox spacing="10">
+                    <padding>
+                        <Insets top="10" right="10" bottom="10" left="10"/>
+                    </padding>
+                    <children>
+                        <Button text="Back"   onAction="#onBack"/>
+                        <Button text="Logout" onAction="#onLogout"/>
+                        <Label text="Photo Search"
+                               style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
+                    </children>
+                </HBox>
+
+                <TitledPane text="Search by Date Range" expanded="false">
+                    <content>
+                        <GridPane hgap="10" vgap="8">
+                            <padding>
+                                <Insets top="10" right="10" bottom="10" left="10"/>
+                            </padding>
+                            <columnConstraints>
+                                <ColumnConstraints halignment="RIGHT" minWidth="80"/>
+                                <ColumnConstraints hgrow="ALWAYS"/>
+                            </columnConstraints>
+                            <children>
+                                <Label text="Start Date:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                                <DatePicker fx:id="startDatePicker" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+
+                                <Label text="End Date:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                                <DatePicker fx:id="endDatePicker" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+                            </children>
+                        </GridPane>
+                    </content>
+                </TitledPane>
+
+                <TitledPane text="Search by Tag" expanded="true">
+                    <content>
+                        <GridPane hgap="10" vgap="8">
+                            <padding>
+                                <Insets top="10" right="10" bottom="10" left="10"/>
+                            </padding>
+                            <columnConstraints>
+                                <ColumnConstraints halignment="RIGHT" minWidth="80"/>
+                                <ColumnConstraints hgrow="ALWAYS"/>
+                                <ColumnConstraints halignment="RIGHT" minWidth="80"/>
+                                <ColumnConstraints hgrow="ALWAYS"/>
+                            </columnConstraints>
+
+                            <children>
+                                <Label text="Tag Type 1:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                                <TextField fx:id="tagType1Field" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+
+                                <Label text="Tag Value 1:" GridPane.rowIndex="0" GridPane.columnIndex="2"/>
+                                <TextField fx:id="tagValue1Field" GridPane.rowIndex="0" GridPane.columnIndex="3"/>
+
+                                <Label text="Combine:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                                <HBox spacing="10" GridPane.rowIndex="1" GridPane.columnIndex="1">
+                                    <children>
+                                        <RadioButton fx:id="andRadio" text="AND" toggleGroup="$logicGroup"/>
+                                        <RadioButton fx:id="orRadio"  text="OR"  toggleGroup="$logicGroup"/>
+                                    </children>
+                                </HBox>
+
+                                <Label text="Tag Type 2:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+                                <TextField fx:id="tagType2Field" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+
+                                <Label text="Tag Value 2:" GridPane.rowIndex="2" GridPane.columnIndex="2"/>
+                                <TextField fx:id="tagValue2Field" GridPane.rowIndex="2" GridPane.columnIndex="3"/>
+                            </children>
+                        </GridPane>
+                    </content>
+                </TitledPane>
+
+                <HBox spacing="10">
+                    <padding>
+                        <Insets top="10" right="10" bottom="10" left="10"/>
+                    </padding>
+                    <children>
+                        <Button text="Search" onAction="#onSearch"/>
+                        <Label fx:id="statusLabel"/>
+                    </children>
+                </HBox>
+
+                <Label text="Search Results:"/>
+            </children>
+        </VBox>
     </top>
 
-    <!-- MAIN CENTER CONTENT -->
     <center>
-        <VBox spacing="20">
-            <padding><Insets top="20" right="20" bottom="20" left="20"/></padding>
-
-            <!-- DATE RANGE SEARCH -->
-            <TitledPane text="Search by Date Range" expanded="false">
-                <content>
-                    <VBox spacing="10">
-                        <padding><Insets top="10" right="10" bottom="10" left="10"/></padding>
-
-                        <HBox spacing="10">
-                            <Label text="Start Date:"/>
-                            <DatePicker fx:id="startDate" prefWidth="200"/>
-                        </HBox>
-
-                        <HBox spacing="10">
-                            <Label text="End Date:"/>
-                            <DatePicker fx:id="endDate" prefWidth="200"/>
-                        </HBox>
-                    </VBox>
-                </content>
-            </TitledPane>
-
-            <!-- TAG SEARCH -->
-            <TitledPane text="Search by Tag" expanded="false">
-                <content>
-                    <VBox spacing="10">
-                        <padding><Insets top="10" right="10" bottom="10" left="10"/></padding>
-
-                        <HBox spacing="10">
-                            <Label text="Tag Type:"/>
-                            <TextField fx:id="tagType"
-                                       promptText="person / location / etc."/>
-                        </HBox>
-
-                        <HBox spacing="10">
-                            <Label text="Tag Value:"/>
-                            <TextField fx:id="tagValue"
-                                       promptText="john / paris / etc."/>
-                        </HBox>
-                    </VBox>
-                </content>
-            </TitledPane>
-
-            <!-- SEARCH BUTTON -->
-            <Button text="Search"
-                    onAction="#doSearch"
-                    prefWidth="150"
-                    style="-fx-font-size: 14px; -fx-font-weight: bold;"/>
-
-            <!-- RESULTS -->
-            <Label text="Search Results:"
-                   style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
-
-            <ListView fx:id="resultsList"
-                      prefHeight="300"/>
-
-            <!-- SAVE RESULTS -->
-            <Button text="Create Album From Results"
-                    prefWidth="250"
-                    style="-fx-font-size: 14px;"
-                    onAction="#createAlbumFromResults"/>
+        <VBox spacing="5">
+            <padding>
+                <Insets top="10" right="10" bottom="10" left="10"/>
+            </padding>
+            <children>
+                <ListView fx:id="resultsList" onMouseClicked="#onResultDoubleClick" VBox.vgrow="ALWAYS"/>
+                <Button fx:id="createAlbumButton" text="Create Album From Results" onAction="#onCreateAlbumFromResults"/>
+            </children>
         </VBox>
     </center>
 
 </BorderPane>
+
