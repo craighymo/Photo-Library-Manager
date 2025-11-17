@@ -142,7 +142,7 @@ public class PhotoView {
         if (newTag.getName().equals("location")) {
         	Tag location = getLocationTag();
         	if (location != null) {
-        		if(!confirm("Repkaces location: " + location.getValue() + " with: " + newTag.getValue())) {
+        		if(!confirm("Replaces location: " + location.getValue() + " with \"" + newTag.getValue() + "\"")) {
         			return;
         		}
         		photo.removeTag(location);

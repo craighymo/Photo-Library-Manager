@@ -14,8 +14,8 @@ public class UserStorage {
     	
         if (users != null) return;
         
-        Path p = Path.of(DATA_FILE);
-        if (!Files.exists(p)) { 
+        Path path = Path.of(DATA_FILE);
+        if (!Files.exists(path)) { 
         	users = new HashMap<>(); return; 
         }
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(DATA_FILE))) {
@@ -47,22 +47,6 @@ public class UserStorage {
     public static Map<String, User> getAllUsers() {
         ensureLoaded();
         return users;
-    }
-
-    public static void ensureAdminAndStock() throws IOException {
-        ensureLoaded();
-
-        if (!users.containsKey("admin")) {
-            users.put("admin", new User("admin"));
-        }
-
-        if (!users.containsKey("stock")) {
-            User stock = new User("stock");
-            stock.addAlbum("stock");
-            users.put("stock", stock);
-        }
-
-        saveAll();
     }
 
     public static void putUser(User user) throws IOException {

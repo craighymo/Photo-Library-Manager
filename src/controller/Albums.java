@@ -1,5 +1,6 @@
 package controller;
 
+import java.io.File;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
@@ -28,6 +29,11 @@ public class Albums {
             return;
         }
         user = UserStorage.getOrCreateUser(username);
+        
+        if ("stock".equalsIgnoreCase(username)) {
+            initializeStockAlbum();
+        }
+        
         albums.setAll(user.getAlbums());
         albumList.setItems(albums);
         status.setText("Logged in as " + username);
@@ -122,12 +128,16 @@ public class Albums {
     @FXML
     private void onRename() {
         Album selection = albumList.getSelectionModel().getSelectedItem();
+        
         if (selection == null) return;
+        
         String oldName = selection.getName();
+        
         TextInputDialog dialog = new TextInputDialog(oldName);
         dialog.setHeaderText("Rename album");
         dialog.setContentText("New name:");
         dialog.setTitle("Rename Album");
+        
         Optional<String> result = dialog.showAndWait();
         if (result.isEmpty()) return;
 
@@ -148,9 +158,13 @@ public class Albums {
     @FXML
     private void onDelete() {
     	Album selection = albumList.getSelectionModel().getSelectedItem();
-        if (selection == null) return;
+        
+    	if (selection == null) return;
+        
         if (!confirm("Delete album '" + selection + "'?")) { return; }
+        
         String name = selection.getName();
+        
         user.deleteAlbum(name);
         albums.remove(selection);
         persist("Deleted: " + name);   
@@ -173,16 +187,38 @@ public class Albums {
     
     @FXML
     private void onSearch() {
-        Photos.go("Search.fxml");
+    	Photos.go("Search.fxml");
     };
-
-    private void alert(String message) {
-        new Alert(Alert.AlertType.INFORMATION, message, ButtonType.OK).showAndWait();
-    }
-
-    private boolean confirm(String message) {
-        return new Alert(Alert.AlertType.CONFIRMATION, message, ButtonType.OK, ButtonType.CANCEL)
-                .showAndWait().orElse(ButtonType.CANCEL) == ButtonType.OK;
+ 
+    private void initializeStockAlbum() {
+        Album stockAlbum = user.getAlbum("stock");
+        
+        if (!stockAlbum.getPhotos().isEmpty()) {
+            return;
+        }
+        
+        File folder = new File("data/stock");
+        
+        File[] files = folder.listFiles();
+        
+        if (files == null) {
+            return;
+        }
+       
+        for (File file : files) {
+            if (!file.isFile()) {
+                continue;
+            }
+            try {
+                Photo photo = new Photo(file.getAbsolutePath());
+                stockAlbum.addPhoto(photo);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        
+        albums.setAll(user.getAlbums());
+        persist("Initialized stock album.");
     }
     
     private void persist(String message) {
@@ -193,5 +229,14 @@ public class Albums {
             e.printStackTrace();
             alert("Save failed.");
         }
+    }
+    
+    private void alert(String message) {
+        new Alert(Alert.AlertType.INFORMATION, message, ButtonType.OK).showAndWait();
+    }
+
+    private boolean confirm(String message) {
+        return new Alert(Alert.AlertType.CONFIRMATION, message, ButtonType.OK, ButtonType.CANCEL)
+                .showAndWait().orElse(ButtonType.CANCEL) == ButtonType.OK;
     }
 }
