@@ -21,6 +21,7 @@ public class Search {
     @FXML private TextField tagValue1Field;
     @FXML private TextField tagType2Field;
     @FXML private TextField tagValue2Field;
+    @FXML private TextField nameField;
 
     @FXML private RadioButton andRadio;
     @FXML private RadioButton orRadio;
@@ -29,7 +30,6 @@ public class Search {
 
     private List<Photo> results = new ArrayList<>();
 
-   
     @FXML
     private void onSearch() {
 
@@ -58,13 +58,17 @@ public class Search {
                 !tagValue1Field.getText().isEmpty() ||
                 !tagType2Field.getText().isEmpty() ||
                 !tagValue2Field.getText().isEmpty();
+        
+        String nameSearch = nameField.getText().trim();
+        boolean nameSearchUsed = !nameSearch.isEmpty();
 
-        if (dateSearchUsed && tagSearchUsed) {
-            showError("Choose EITHER date search OR tag search.");
+        if (nameSearchUsed && dateSearchUsed || tagSearchUsed && dateSearchUsed 
+        		|| nameSearchUsed && tagSearchUsed) {
+            showError("Choose EITHER name search, date search OR tag search.");
             return;
         }
 
-        if (!dateSearchUsed && !tagSearchUsed) {
+        if (!dateSearchUsed && !tagSearchUsed && !nameSearchUsed) {
             showError("Enter search criteria.");
             return;
         }
@@ -87,6 +91,43 @@ public class Search {
                 }
             }
 
+            resultsList.getItems().setAll(results);
+            statusLabel.setText(results.size() + " photos found.");
+            return;
+        }
+        
+        if (nameSearchUsed) {
+            String query = nameField.getText().toLowerCase();
+            
+            for (Album a : albums) {     
+            	for (Photo p : a.getPhotos()) {
+
+                    boolean found = false;
+
+                    String caption = p.getCaption();
+                    if (caption != null) {
+                        caption = caption.toLowerCase();
+                        if (caption.contains(query)) {
+                            found = true;
+                        }
+                    }
+
+                    if (!found) {                            
+                        String filePath = p.getFilePath();
+                        if (filePath != null) {
+                            String fileName = new java.io.File(filePath).getName();
+                            fileName = fileName.toLowerCase();
+                            if (fileName.contains(query)) {
+                                found = true;
+                            }
+                        }
+                    }
+                    if (found && !results.contains(p)) {
+                        results.add(p);
+                    }
+                }
+            }
+            
             resultsList.getItems().setAll(results);
             statusLabel.setText(results.size() + " photos found.");
             return;
@@ -145,7 +186,6 @@ public class Search {
         statusLabel.setText(results.size() + " photos found.");
     }
 
-   
     @FXML
     private void onResultDoubleClick(MouseEvent e) {
         if (e.getClickCount() == 2) {
@@ -157,7 +197,6 @@ public class Search {
         }
     }
 
-    
     @FXML
     private void onCreateAlbumFromResults() {
 
@@ -203,7 +242,6 @@ public class Search {
             statusLabel.setText("Album \"" + name + "\" created.");
         });
     }
-
     
     @FXML
     private void onBack() {
@@ -215,8 +253,30 @@ public class Search {
         Session.clear();
         Photos.go("Login.fxml");
     }
-
     
+    @FXML
+    private void onReset() {
+
+        startDatePicker.setValue(null);
+        endDatePicker.setValue(null);
+
+        tagType1Field.clear();
+        tagValue1Field.clear();
+        tagType2Field.clear();
+        tagValue2Field.clear();
+
+        andRadio.setSelected(true);
+        orRadio.setSelected(false);
+
+        if (nameField != null) {
+            nameField.clear();
+        }
+
+        results.clear();
+        resultsList.getItems().clear();
+        statusLabel.setText("");
+    }
+
     private void showError(String msg) {
         Alert a = new Alert(Alert.AlertType.ERROR);
         a.setHeaderText(null);

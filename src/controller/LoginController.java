@@ -8,6 +8,10 @@ import model.Session;
 public class LoginController {
 
     @FXML private TextField usernameField;
+    
+    @FXML private void initialize() {
+    	usernameField.setOnAction(e -> onLogin());
+    }
 
     @FXML
     private void onLogin() {

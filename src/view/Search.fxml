@@ -7,7 +7,7 @@
 <BorderPane xmlns="http://javafx.com/javafx/21"
             xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="controller.Search"
-            prefWidth="600" prefHeight="500">
+            prefWidth="600" prefHeight="550">
 
     <top>
         <VBox spacing="10">
@@ -33,6 +33,26 @@
                     </children>
                 </HBox>
 
+                <TitledPane text="Search by Name" expanded="false">
+                    <content>
+                        <GridPane hgap="10" vgap="8">
+                            <padding>
+                                <Insets top="10" right="10" bottom="10" left="10"/>
+                            </padding>
+                            <columnConstraints>
+                                <ColumnConstraints halignment="RIGHT" minWidth="80"/>
+                                <ColumnConstraints hgrow="ALWAYS"/>
+                            </columnConstraints>
+                            <children>
+                                <Label text="Name:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                                <TextField fx:id="nameField"
+                                           promptText="Photo caption or file name"
+                                           GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+                            </children>
+                        </GridPane>
+                    </content>
+                </TitledPane>
+
                 <TitledPane text="Search by Date Range" expanded="false">
                     <content>
                         <GridPane hgap="10" vgap="8">
@@ -54,7 +74,7 @@
                     </content>
                 </TitledPane>
 
-                <TitledPane text="Search by Tag" expanded="true">
+                <TitledPane text="Search by Tag" expanded="false">
                     <content>
                         <GridPane hgap="10" vgap="8">
                             <padding>
@@ -77,8 +97,13 @@
                                 <Label text="Combine:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
                                 <HBox spacing="10" GridPane.rowIndex="1" GridPane.columnIndex="1">
                                     <children>
-                                        <RadioButton fx:id="andRadio" text="AND" toggleGroup="$logicGroup"/>
-                                        <RadioButton fx:id="orRadio"  text="OR"  toggleGroup="$logicGroup"/>
+                                        <RadioButton fx:id="andRadio"
+                                                     text="AND"
+                                                     toggleGroup="$logicGroup"
+                                                     selected="true"/>
+                                        <RadioButton fx:id="orRadio"
+                                                     text="OR"
+                                                     toggleGroup="$logicGroup"/>
                                     </children>
                                 </HBox>
 
@@ -98,6 +123,7 @@
                     </padding>
                     <children>
                         <Button text="Search" onAction="#onSearch"/>
+			<Button text="Reset"  onAction="#onReset"/>
                         <Label fx:id="statusLabel"/>
                     </children>
                 </HBox>
@@ -113,8 +139,12 @@
                 <Insets top="10" right="10" bottom="10" left="10"/>
             </padding>
             <children>
-                <ListView fx:id="resultsList" onMouseClicked="#onResultDoubleClick" VBox.vgrow="ALWAYS"/>
-                <Button fx:id="createAlbumButton" text="Create Album From Results" onAction="#onCreateAlbumFromResults"/>
+                <ListView fx:id="resultsList"
+                          onMouseClicked="#onResultDoubleClick"
+                          VBox.vgrow="ALWAYS"/>
+                <Button fx:id="createAlbumButton"
+                        text="Create Album From Results"
+                        onAction="#onCreateAlbumFromResults"/>
             </children>
         </VBox>
     </center>
