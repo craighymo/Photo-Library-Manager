@@ -13,7 +13,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import java.nio.file.Path;
 import java.time.format.DateTimeFormatter;
-
+import java.util.Optional;
 import java.io.File;
 
 public class AlbumView {
@@ -21,12 +21,14 @@ public class AlbumView {
     @FXML private Label albumNameLabel;
     @FXML private Label photoCountLabel;
     @FXML private Label status;
-
+    
     @FXML private ListView<Photo> photoList;
-
+    
     @FXML private Button removeButton;
     @FXML private Button editCaptionButton;
     @FXML private Button openPhotoButton;
+    @FXML private Button copyButton;
+    @FXML private Button moveButton;
 
     private User user;
     private Album album;
@@ -113,6 +115,8 @@ public class AlbumView {
             removeButton.setDisable(!selected);
             editCaptionButton.setDisable(!selected);
             openPhotoButton.setDisable(!selected);
+            copyButton.setDisable(!selected);
+            moveButton.setDisable(!selected);
         });
 
         status.setText("Viewing album: " + album.getName());
@@ -150,7 +154,7 @@ public class AlbumView {
             persist("Added photo: " + p.toString());
         } catch (Exception e) {
             e.printStackTrace();
-            alert("Failed to load photo.");
+            alert("Unable to load photo.");
         }
     }
 
@@ -191,6 +195,74 @@ public class AlbumView {
 
         Session.setCurrentPhoto(select);
         Photos.popup("PhotoView.fxml");
+    }
+    
+    private Album targetAlbum(String title) {
+        TextInputDialog dialog = new TextInputDialog();
+        dialog.setTitle(title);
+        dialog.setHeaderText(title);
+        dialog.setContentText("Enter album name:");
+
+        Optional<String> result = dialog.showAndWait();
+        if (result.isEmpty()) {
+            return null;                   
+        }
+
+        String name = result.get().trim();
+        if (name.isEmpty()) {
+            alert("Album name is empty.");
+            return null;
+        }
+
+        Album target = user.getAlbum(name);
+        if (target == null) {
+            alert("Album: " + name + " not found.");
+            return null;
+        }
+
+        if (target == album) {
+            alert("That's the current album...");
+            return null;
+        }
+
+        return target;
+    }
+    
+    @FXML
+    private void onCopyPhoto() {
+        Photo selected = photoList.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            return;
+        }
+
+        Album target = targetAlbum("Copy Photo");
+        if (target == null) {
+            return; 
+        }
+
+        target.addPhoto(selected);
+        persist("Copied photo to album: " + target.getName());
+    }
+    
+    @FXML
+    private void onMovePhoto() {
+        Photo selected = photoList.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            return;
+        }
+
+        Album target = targetAlbum("Move Photo");
+        if (target == null) {
+            return;
+        }
+
+        target.addPhoto(selected);
+        
+        album.removePhoto(selected);
+        photoList.getItems().remove(selected);
+        updatePhotoCount();
+
+        persist("Moved photo to album: " + target.getName());
     }
 
     private void disableAll() {

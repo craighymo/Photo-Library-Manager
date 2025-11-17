@@ -15,6 +15,8 @@
 	    <Button text="Open Photo" fx:id="openPhotoButton" onAction="#onOpenPhoto" disable="true"/>
 
             <Button text="Add Photo"        onAction="#onAddPhoto"/>
+	    <Button text="Copy Photo" fx:id="copyButton" onAction="#onCopyPhoto" disable="true"/>
+            <Button text="Move Photo" fx:id="moveButton" onAction="#onMovePhoto" disable="true"/>
             <Button text="Remove Photo"     fx:id="removeButton" onAction="#onRemovePhoto" disable="true"/>
             <Button text="Edit Caption"     fx:id="editCaptionButton" onAction="#onEditCaption" disable="true"/>
 
