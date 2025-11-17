@@ -172,7 +172,9 @@ public class Albums {
     }
     
     @FXML
-    private void onSearch() {};
+    private void onSearch() {
+        Photos.go("Search.fxml");
+    };
 
     private void alert(String message) {
         new Alert(Alert.AlertType.INFORMATION, message, ButtonType.OK).showAndWait();
