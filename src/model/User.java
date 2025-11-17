@@ -31,4 +31,26 @@ public class User implements Serializable {
                      .filter(a -> a.getName().equals(name))
                      .findFirst().orElse(null);
     }
+    
+    public List<String> getKnownTagTypes() {
+        List<String> list = new ArrayList<>();
+
+        list.add("person");
+        list.add("location");
+
+        for (Album album : albums) {
+            for (Photo photo : album.getPhotos()) {
+                for (Tag tag : photo.getTags()) {
+                    String name = tag.getName();
+                    if (name != null && !name.isBlank() && !list.contains(name)) {
+                        list.add(name);
+                    }
+                }
+            }
+        }
+
+        return list;
+    }
+    
+    
 }

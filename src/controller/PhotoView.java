@@ -191,7 +191,7 @@ public class PhotoView {
         dialog.getDialogPane().getButtonTypes().addAll(addButtonType, ButtonType.CANCEL);
 
         ComboBox<String> typeBox = new ComboBox<>();
-        typeBox.getItems().addAll(getKnownTags());
+        typeBox.getItems().addAll(user.getKnownTagTypes());
         typeBox.setEditable(true);
 
         TextField valueField = new TextField();
@@ -253,29 +253,7 @@ public class PhotoView {
         }
         return null;
     }
-    
-    private List<String> getKnownTags() {
-        List<String> list = new ArrayList<>();
-        
-        list.add("person");
-        list.add("location");
-        
-        if (user != null) {
-            for (Album album : user.getAlbums()) {
-                for (Photo photo : album.getPhotos()) {
-                    for (Tag tag : photo.getTags()) {
-                        String name = tag.getName();
-                        if (name != null && !name.isBlank()) {
-                        	if (!list.contains(name))
-                        		list.add(name);
-                        }
-                    }
-                }
-            }
-        }
-        return new ArrayList<>(list);
-    }
-    
+     
     private Tag getLocationTag() {
     	if (photo == null) {
     		return null;
