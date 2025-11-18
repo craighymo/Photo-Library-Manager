@@ -16,288 +16,380 @@ import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 import java.io.File;
 
+/** Controller for the AlbumView screen.
+* <p>
+* This view shows all photos in a single album, along with their thumbnails,
+* captions, and dates. Users can:
+* </p>
+* <ul>
+*     <li>Add photos to the current album</li>
+*     <li>Remove photos</li>
+*     <li>Edit captions</li>
+*     <li>Open a photo in a separate viewer (PhotoView)</li>
+*     <li>Copy or move photos to another album</li>
+* </ul>
+*
+* <p>The controller loads the active user and album from {@link Session} and
+* persists changes using {@link UserStorage}.</p>
+*
+* @author Craig Hymowitz
+*/
 public class AlbumView {
 
-    @FXML private Label albumNameLabel;
-    @FXML private Label photoCountLabel;
-    @FXML private Label status;
-    
-    @FXML private ListView<Photo> photoList;
-    
-    @FXML private Button removeButton;
-    @FXML private Button editCaptionButton;
-    @FXML private Button openPhotoButton;
-    @FXML private Button copyButton;
-    @FXML private Button moveButton;
+	@FXML
+	private Label albumNameLabel;
+	@FXML
+	private Label photoCountLabel;
+	@FXML
+	private Label status;
 
-    private User user;
-    private Album album;
+	@FXML
+	private ListView<Photo> photoList;
 
-    @FXML
-    private void initialize() {
-        String username = Session.getUsername();
-        String albumName = Session.getCurrentAlbumName();
+	@FXML
+	private Button removeButton;
+	@FXML
+	private Button editCaptionButton;
+	@FXML
+	private Button openPhotoButton;
+	@FXML
+	private Button copyButton;
+	@FXML
+	private Button moveButton;
 
-        if (username == null || albumName == null) {
-            status.setText("No album selectected.");
-            disableAll();
-            return;
-        }
+	private User user;
+	private Album album;
 
-        user = UserStorage.getOrCreateUser(username);
-        album = user.getAlbum(albumName);
+	/**
+	 * Initializes the album view.
+	 * <p>
+	 * Loads the current user and album from the {@link Session}, the photo list
+	 * with thumbnails and date/time information, handles the selection behavior,
+	 * and sets up double-click to open a photo.
+	 * </p>
+	 */
+	@FXML
+	private void initialize() {
+		String username = Session.getUsername();
+		String albumName = Session.getCurrentAlbumName();
 
-        if (album == null) {
-            status.setText("Album '" + albumName + "' not found.");
-            disableAll();
-            return;
-        }
+		if (username == null || albumName == null) {
+			status.setText("No album selectected.");
+			disableAll();
+			return;
+		}
 
-        albumNameLabel.setText(album.getName());
-        updatePhotoCount();
+		user = UserStorage.getOrCreateUser(username);
+		album = user.getAlbum(albumName);
 
-        photoList.setItems(FXCollections.observableArrayList(album.getPhotos()));
+		if (album == null) {
+			status.setText("Album '" + albumName + "' not found.");
+			disableAll();
+			return;
+		}
 
-        photoList.setCellFactory(list -> new ListCell<Photo>() {
+		albumNameLabel.setText(album.getName());
+		updatePhotoCount();
 
-            private final ImageView thumbNail = new ImageView();
-            private final Label captionLabel = new Label();
-            private final Label dateLabel = new Label();
-            private final VBox textBox = new VBox(2, captionLabel, dateLabel);
-            private final HBox box = new HBox(10, thumbNail, textBox);
-            private final DateTimeFormatter format =
-                    DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+		photoList.setItems(FXCollections.observableArrayList(album.getPhotos()));
 
-            {
-                thumbNail.setFitWidth(80);
-                thumbNail.setFitHeight(80);
-                thumbNail.setPreserveRatio(true);
-            }
+		photoList.setCellFactory(list -> new ListCell<Photo>() {
 
-            @Override
-            protected void updateItem(Photo p, boolean empty) {
-                super.updateItem(p, empty);
+			private final ImageView thumbNail = new ImageView();
+			private final Label captionLabel = new Label();
+			private final Label dateLabel = new Label();
+			private final VBox textBox = new VBox(2, captionLabel, dateLabel);
+			private final HBox box = new HBox(10, thumbNail, textBox);
+			private final DateTimeFormatter format = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
-                if (empty || p == null) {
-                    setText(null);
-                    setGraphic(null);
-                    return;
-                }
+			{
+				thumbNail.setFitWidth(80);
+				thumbNail.setFitHeight(80);
+				thumbNail.setPreserveRatio(true);
+			}
 
-                String caption = p.getCaption();
-                if (caption == null || caption.isEmpty()) {
-                    caption = Path.of(p.getFilePath()).getFileName().toString();
-                }
-                captionLabel.setText(caption);
+			@Override
+			protected void updateItem(Photo p, boolean empty) {
+				super.updateItem(p, empty);
 
-                if (p.getDate() != null) {
-                    dateLabel.setText(p.getDate().format(format));
-                } else {
-                    dateLabel.setText("");
-                }
+				if (empty || p == null) {
+					setText(null);
+					setGraphic(null);
+					return;
+				}
 
-                File f = new File(p.getFilePath());
-                if (f.exists()) {
-                    Image img = new Image(f.toURI().toString(), 80, 80, true, true);
-                    thumbNail.setImage(img);
-                } else {
-                    thumbNail.setImage(null);
-                }
+				String caption = p.getCaption();
+				if (caption == null || caption.isEmpty()) {
+					caption = Path.of(p.getFilePath()).getFileName().toString();
+				}
+				captionLabel.setText(caption);
 
-                setText(null);   
-                setGraphic(box);
-            }
-        });
-        
-        photoList.getSelectionModel().selectedItemProperty().addListener((obs, oldV, newV) -> {
-            boolean selected = newV != null;
-            removeButton.setDisable(!selected);
-            editCaptionButton.setDisable(!selected);
-            openPhotoButton.setDisable(!selected);
-            copyButton.setDisable(!selected);
-            moveButton.setDisable(!selected);
-        });
-        
-        photoList.setOnMouseClicked(event -> {
-            if (event.getClickCount() == 2) {
-                onOpenPhoto();
-            }
-        });
+				if (p.getDate() != null) {
+					dateLabel.setText(p.getDate().format(format));
+				} else {
+					dateLabel.setText("");
+				}
 
-        status.setText("Viewing album: " + album.getName());
-    }
+				File f = new File(p.getFilePath());
+				if (f.exists()) {
+					Image img = new Image(f.toURI().toString(), 80, 80, true, true);
+					thumbNail.setImage(img);
+				} else {
+					thumbNail.setImage(null);
+				}
 
-    @FXML
-    private void onBack() {
-        Photos.go("Albums.fxml");
-    }
+				setText(null);
+				setGraphic(box);
+			}
+		});
 
-    @FXML
-    private void onAddPhoto() {
-        FileChooser fc = new FileChooser();
-        fc.setTitle("Select Photo");
-        fc.getExtensionFilters().add(
-                new FileChooser.ExtensionFilter("Images", "*.jpg", "*.jpeg", "*.png", "*.gif", "*.bmp")
-        ); 
+		photoList.getSelectionModel().selectedItemProperty().addListener((obs, oldV, newV) -> {
+			boolean selected = newV != null;
+			removeButton.setDisable(!selected);
+			editCaptionButton.setDisable(!selected);
+			openPhotoButton.setDisable(!selected);
+			copyButton.setDisable(!selected);
+			moveButton.setDisable(!selected);
+		});
 
-        File selected = fc.showOpenDialog(null);
-        if (selected == null) return;
+		photoList.setOnMouseClicked(event -> {
+			if (event.getClickCount() == 2) {
+				onOpenPhoto();
+			}
+		});
 
-        try {
-            Photo p = new Photo(selected.getAbsolutePath());
+		status.setText("Viewing album: " + album.getName());
+	}
 
-            boolean exists = album.getPhotos().stream()
-                    .anyMatch(photo -> photo.getFilePath().equals(p.getFilePath()));
-            if (exists) {
-                alert("This photo is already in the album.");
-                return;
-            }
+	/**
+	 * Returns to Albums list view.
+	 */
+	@FXML
+	private void onBack() {
+		Photos.go("Albums.fxml");
+	}
 
-            album.addPhoto(p);
-            photoList.getItems().add(p);
-            updatePhotoCount();
-            persist("Added photo: " + p.toString());
-        } catch (Exception e) {
-            e.printStackTrace();
-            alert("Unable to load photo.");
-        }
-    }
+	/**
+	 * Adds a new photo to the current album using a file chooser. Checks it's the
+	 * appropriate photo type and prevents duplicates.
+	 */
+	@FXML
+	private void onAddPhoto() {
+		FileChooser fc = new FileChooser();
+		fc.setTitle("Select Photo");
+		fc.getExtensionFilters()
+				.add(new FileChooser.ExtensionFilter("Images", "*.jpg", "*.jpeg", "*.png", "*.gif", "*.bmp"));
 
-    @FXML
-    private void onRemovePhoto() {
-        Photo select = photoList.getSelectionModel().getSelectedItem();
-        if (select == null) return;
+		File selected = fc.showOpenDialog(null);
+		if (selected == null)
+			return;
 
-        if (!confirm("Remove photo from the album?")) return;
+		try {
+			Photo photo = new Photo(selected.getAbsolutePath());
 
-        album.removePhoto(select);
-        photoList.getItems().remove(select);
-        updatePhotoCount();
-        persist("Removed photo.");
-    }
+			boolean exists = album.getPhotos().stream().anyMatch(p -> p.getFilePath().equals(photo.getFilePath()));
+			if (exists) {
+				alert("This photo is already in the album.");
+				return;
+			}
 
-    @FXML
-    private void onEditCaption() {
-        Photo select = photoList.getSelectionModel().getSelectedItem();
-        if (select == null) return;
+			album.addPhoto(photo);
+			photoList.getItems().add(photo);
+			updatePhotoCount();
+			persist("Added photo: " + photo.toString());
+		} catch (Exception e) {
+			e.printStackTrace();
+			alert("Unable to load photo.");
+		}
+	}
 
-        TextInputDialog dialog = new TextInputDialog(select.getCaption());
-        dialog.setHeaderText("Edit Caption");
-        dialog.setContentText("Caption:");
-        dialog.setTitle("Photo Caption");
+	/**
+	 * Confirms then removes the selected photo from the album.
+	 */
+	@FXML
+	private void onRemovePhoto() {
+		Photo select = photoList.getSelectionModel().getSelectedItem();
+		if (select == null)
+			return;
 
-        dialog.showAndWait().ifPresent(caption -> {
-            select.setCaption(caption);
-            photoList.refresh();
-            persist("Updated caption.");
-        });
-    }
-    
-    @FXML
-    private void onOpenPhoto() {
-        Photo select = photoList.getSelectionModel().getSelectedItem();
-        if (select == null) return;
+		if (!confirm("Remove photo from the album?"))
+			return;
 
-        Session.setCurrentPhoto(select);
-        Photos.popup("PhotoView.fxml");
-    }
-    
-    private Album targetAlbum(String title) {
-        TextInputDialog dialog = new TextInputDialog();
-        dialog.setTitle(title);
-        dialog.setHeaderText(title);
-        dialog.setContentText("Enter album name:");
+		album.removePhoto(select);
+		photoList.getItems().remove(select);
+		updatePhotoCount();
+		persist("Removed photo.");
+	}
 
-        Optional<String> result = dialog.showAndWait();
-        if (result.isEmpty()) {
-            return null;                   
-        }
+	/**
+	 * Edits the caption (file name by default) of the selected photo with text
+	 * input dialog.
+	 */
+	@FXML
+	private void onEditCaption() {
+		Photo select = photoList.getSelectionModel().getSelectedItem();
+		if (select == null)
+			return;
 
-        String name = result.get().trim();
-        if (name.isEmpty()) {
-            alert("Album name is empty.");
-            return null;
-        }
+		TextInputDialog dialog = new TextInputDialog(select.getCaption());
+		dialog.setHeaderText("Edit Caption");
+		dialog.setContentText("Caption:");
+		dialog.setTitle("Photo Caption");
 
-        Album target = user.getAlbum(name);
-        if (target == null) {
-            alert("Album: " + name + " not found.");
-            return null;
-        }
+		dialog.showAndWait().ifPresent(caption -> {
+			select.setCaption(caption);
+			photoList.refresh();
+			persist("Updated caption.");
+		});
+	}
 
-        if (target == album) {
-            alert("That's the current album...");
-            return null;
-        }
+	/**
+	 * Opens the selected photo in a popup PhotoView.
+	 */
+	@FXML
+	private void onOpenPhoto() {
+		Photo select = photoList.getSelectionModel().getSelectedItem();
+		if (select == null)
+			return;
 
-        return target;
-    }
-    
-    @FXML
-    private void onCopyPhoto() {
-        Photo selected = photoList.getSelectionModel().getSelectedItem();
-        if (selected == null) {
-            return;
-        }
+		Session.setCurrentPhoto(select);
+		Photos.popup("PhotoView.fxml");
+	}
 
-        Album target = targetAlbum("Copy Photo");
-        if (target == null) {
-            return; 
-        }
+	/**
+	 * Asks the user for a target album name and returns the matching album. Makes
+	 * sure that the album exists and is not the current album.
+	 *
+	 * @param title the dialog title/header
+	 * @return the target album, or {@code null} if cancelled or not valid
+	 */
+	private Album targetAlbum(String title) {
+		TextInputDialog dialog = new TextInputDialog();
+		dialog.setTitle(title);
+		dialog.setHeaderText(title);
+		dialog.setContentText("Enter album name:");
 
-        target.addPhoto(selected);
-        persist("Copied photo to album: " + target.getName());
-    }
-    
-    @FXML
-    private void onMovePhoto() {
-        Photo selected = photoList.getSelectionModel().getSelectedItem();
-        if (selected == null) {
-            return;
-        }
+		Optional<String> result = dialog.showAndWait();
+		if (result.isEmpty()) {
+			return null;
+		}
 
-        Album target = targetAlbum("Move Photo");
-        if (target == null) {
-            return;
-        }
+		String name = result.get().trim();
+		if (name.isEmpty()) {
+			alert("Album name is empty.");
+			return null;
+		}
 
-        target.addPhoto(selected);
-        
-        album.removePhoto(selected);
-        photoList.getItems().remove(selected);
-        updatePhotoCount();
+		Album target = user.getAlbum(name);
+		if (target == null) {
+			alert("Album: " + name + " not found.");
+			return null;
+		}
 
-        persist("Moved photo to album: " + target.getName());
-    }
+		if (target == album) {
+			alert("That's the current album...");
+			return null;
+		}
 
-    private void disableAll() {
-        if (removeButton != null) removeButton.setDisable(true);
-        if (editCaptionButton != null) editCaptionButton.setDisable(true);
-        if (photoList != null) photoList.setDisable(true);
-    }
+		return target;
+	}
 
-    private void updatePhotoCount() {
-        if (photoCountLabel != null && album != null) {
-            photoCountLabel.setText(Integer.toString(album.getPhotoCount()));
-        }
-    }
-    
-    private void persist(String message) {
-        try {
-            UserStorage.putUser(user);
-            status.setText(message);
-        } catch (Exception e) {
-            e.printStackTrace();
-            alert("Save failed.");
-        }
-    }
+	/**
+	 * Copies the selected photo to another album.
+	 */
+	@FXML
+	private void onCopyPhoto() {
+		Photo selected = photoList.getSelectionModel().getSelectedItem();
+		if (selected == null) {
+			return;
+		}
 
-    private void alert(String message) {
-        new Alert(Alert.AlertType.INFORMATION, message, ButtonType.OK).showAndWait();
-    }
+		Album target = targetAlbum("Copy Photo");
+		if (target == null) {
+			return;
+		}
 
-    private boolean confirm(String message) {
-        return new Alert(Alert.AlertType.CONFIRMATION, message, ButtonType.OK, ButtonType.CANCEL)
-                .showAndWait().orElse(ButtonType.CANCEL) == ButtonType.OK;
-    }
+		target.addPhoto(selected);
+		persist("Copied photo to album: " + target.getName());
+	}
+
+	/**
+	 * Moves the selected photo to another album. Same as copy but also deletes.
+	 */
+	@FXML
+	private void onMovePhoto() {
+		Photo selected = photoList.getSelectionModel().getSelectedItem();
+		if (selected == null) {
+			return;
+		}
+
+		Album target = targetAlbum("Move Photo");
+		if (target == null) {
+			return;
+		}
+
+		target.addPhoto(selected);
+
+		album.removePhoto(selected);
+		photoList.getItems().remove(selected);
+		updatePhotoCount();
+
+		persist("Moved photo to album: " + target.getName());
+	}
+
+	/**
+	 * Disables the main UI controls when there's no valid album loaded.
+	 */
+	private void disableAll() {
+		if (removeButton != null)
+			removeButton.setDisable(true);
+		if (editCaptionButton != null)
+			editCaptionButton.setDisable(true);
+		if (photoList != null)
+			photoList.setDisable(true);
+	}
+
+	/**
+	 * Updates the label that shows the number of photos in the album.
+	 */
+	private void updatePhotoCount() {
+		if (photoCountLabel != null && album != null) {
+			photoCountLabel.setText(Integer.toString(album.getPhotoCount()));
+		}
+	}
+
+	/**
+	 * Saves the current user's data and updates the status.
+	 *
+	 * @param message status to display
+	 */
+	private void persist(String message) {
+		try {
+			UserStorage.putUser(user);
+			status.setText(message);
+		} catch (Exception e) {
+			e.printStackTrace();
+			alert("Save failed.");
+		}
+	}
+
+	/**
+	 * Shows an alert dialog with info.
+	 *
+	 * @param message the message to display
+	 */
+	private void alert(String message) {
+		new Alert(Alert.AlertType.INFORMATION, message, ButtonType.OK).showAndWait();
+	}
+
+	/**
+	 * Shows a confirmation dialog and returns the user's response.
+	 *
+	 * @param message confirmation
+	 * @return {@code true} if OK was pressed, otherwise {@code false}
+	 */
+	private boolean confirm(String message) {
+		return new Alert(Alert.AlertType.CONFIRMATION, message, ButtonType.OK, ButtonType.CANCEL).showAndWait()
+				.orElse(ButtonType.CANCEL) == ButtonType.OK;
+	}
 }

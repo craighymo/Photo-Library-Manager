@@ -11,93 +11,131 @@ import model.UserStorage;
 
 import java.io.IOException;
 
+/**
+ * Controller for the Admin screen.
+ *
+ * This screen allows the administrator to:
+ * <ul>
+ * <li>View all registered users</li>
+ * <li>Add new users</li>
+ * <li>Delete existing users (except admin and stock)</li>
+ * <li>Logout back to the login screen</li>
+ * </ul>
+ *
+ * It interacts with {@link UserStorage} to manage persistent user data.
+ * 
+ * @author Joseph Cabrera
+ */
 public class AdminController {
 
-    @FXML
-    private ListView<String> userList;
+	@FXML
+	private ListView<String> userList;
 
-    @FXML
-    private TextField newUserField;
+	@FXML
+	private TextField newUserField;
 
-    @FXML
-    private Button addUserButton;
+	@FXML
+	private Button addUserButton;
 
-    @FXML
-    private Button deleteUserButton;
+	@FXML
+	private Button deleteUserButton;
 
-    @FXML
-    private Button logoutButton;
+	@FXML
+	private Button logoutButton;
 
-    @FXML
-    private void initialize() {
-        refreshList();
-    }
+	/**
+	 * Initializes the Admin screen by populating the user list.
+	 */
+	@FXML
+	private void initialize() {
+		refreshList();
+	}
 
-    private void refreshList() {
-        userList.getItems().clear();
-        for (String name : UserStorage.getAllUsers().keySet()) {
-            userList.getItems().add(name);
-        }
-    }
+	/**
+	 * Reloads the list of usernames displayed in the UI. Fetches all users from
+	 * storage and updates the ListView.
+	 */
+	private void refreshList() {
+		userList.getItems().clear();
+		for (String name : UserStorage.getAllUsers().keySet()) {
+			userList.getItems().add(name);
+		}
+	}
 
-    @FXML
-    private void addUser() {
-        String name = newUserField.getText().trim();
+	/**
+	 * Adds a new user using the text entered in the input field. Validates input,
+	 * checks for duplicates, and updates storage.
+	 */
+	@FXML
+	private void addUser() {
+		String name = newUserField.getText().trim();
 
-        if (name.isEmpty()) {
-            showError("Username cannot be empty.");
-            return;
-        }
+		if (name.isEmpty()) {
+			showError("Username cannot be empty.");
+			return;
+		}
 
-        if (UserStorage.getUser(name) != null) {
-            showError("User already exists.");
-            return;
-        }
+		if (UserStorage.getUser(name) != null) {
+			showError("User already exists.");
+			return;
+		}
 
-        try {
-            User newUser = new User(name);
-            UserStorage.putUser(newUser);
-            refreshList();
-            newUserField.clear();
-        } catch (IOException e) {
-            e.printStackTrace();
-            showError("Error saving user.");
-        }
-    }
+		try {
+			User newUser = new User(name);
+			UserStorage.putUser(newUser);
+			refreshList();
+			newUserField.clear();
+		} catch (IOException e) {
+			e.printStackTrace();
+			showError("Error saving user.");
+		}
+	}
 
-    @FXML
-    private void deleteUser() {
-        String selected = userList.getSelectionModel().getSelectedItem();
+	/**
+	 * Deletes the selected user from the system. Prevents deletion of reserved
+	 * users such as "admin" and "stock".
+	 */
+	@FXML
+	private void deleteUser() {
+		String selected = userList.getSelectionModel().getSelectedItem();
 
-        if (selected == null) {
-            showError("Select a user first.");
-            return;
-        }
+		if (selected == null) {
+			showError("Select a user first.");
+			return;
+		}
 
-        if (selected.equalsIgnoreCase("admin") || selected.equalsIgnoreCase("stock")) {
-            showError("Cannot delete admin or stock user.");
-            return;
-        }
+		if (selected.equalsIgnoreCase("admin") || selected.equalsIgnoreCase("stock")) {
+			showError("Cannot delete admin or stock user.");
+			return;
+		}
 
-        try {
-            UserStorage.getAllUsers().remove(selected);
-            UserStorage.save();
-            refreshList();
-        } catch (IOException e) {
-            e.printStackTrace();
-            showError("Error deleting user.");
-        }
-    }
+		try {
+			UserStorage.getAllUsers().remove(selected);
+			UserStorage.save();
+			refreshList();
+		} catch (IOException e) {
+			e.printStackTrace();
+			showError("Error deleting user.");
+		}
+	}
 
-    @FXML
-    private void logout() {
-        Photos.go("Login.fxml");
-    }
+	/**
+	 * Logs out from the Admin screen and returns to the login view.
+	 */
+	@FXML
+	private void logout() {
+		Photos.go("Login.fxml");
+	}
 
-    private void showError(String msg) {
-        Alert a = new Alert(Alert.AlertType.ERROR);
-        a.setHeaderText(null);
-        a.setContentText(msg);
-        a.showAndWait();
-    }
+	/**
+	 * Shows an error popup with the provided message.
+	 *
+	 * @param msg the error message to display
+	 */
+	private void showError(String msg) {
+		Alert a = new Alert(Alert.AlertType.ERROR);
+		a.setHeaderText(null);
+		a.setContentText(msg);
+		a.showAndWait();
+	}
 }
