@@ -1,18 +1,14 @@
-# Eclipse
 /.classpath
 /.project
 /.settings/
 
-# Build output
 /bin/
 /target/
 
-# OS
+*.class
+*.log
+
+/javafx-*/
+
 .DS_Store
 Thumbs.db
-
-# Java
-*.class
-
-# JavaFX SDK - don't commit SDKs
-javafx-sdk*/
